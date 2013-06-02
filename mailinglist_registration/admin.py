@@ -3,31 +3,31 @@ from django.contrib.sites.models import RequestSite
 from django.contrib.sites.models import Site
 from django.utils.translation import ugettext_lazy as _
 
-from registration.models import RegistrationProfile
+from mailinglist_registration.models import RegistrationProfile
 
 
 class RegistrationAdmin(admin.ModelAdmin):
     actions = ['activate_users', 'resend_activation_email']
-    list_display = ('user', 'activation_key_expired')
-    raw_id_fields = ['user']
-    search_fields = ('user__username', 'user__first_name', 'user__last_name')
+    list_display = ('subscriber', 'activation_key_expired')
+    raw_id_fields = ['subscriber']
+    search_fields = ('subscriber_email',)
 
-    def activate_users(self, request, queryset):
+    def activate_subscribers(self, request, queryset):
         """
-        Activates the selected users, if they are not alrady
+        Activates the selected subscribers, if they are not alrady
         activated.
         
         """
         for profile in queryset:
-            RegistrationProfile.objects.activate_user(profile.activation_key)
-    activate_users.short_description = _("Activate users")
+            RegistrationProfile.objects.activate_subscriber(profile.activation_key)
+    activate_subscribers.short_description = _("Activate subscribers")
 
     def resend_activation_email(self, request, queryset):
         """
-        Re-sends activation emails for the selected users.
+        Re-sends activation emails for the selected subscribers.
 
-        Note that this will *only* send activation emails for users
-        who are eligible to activate; emails will not be sent to users
+        Note that this will *only* send activation emails for subscribers
+        who are eligible to activate; emails will not be sent to subscribers
         whose activation keys have expired or who have already
         activated.
         

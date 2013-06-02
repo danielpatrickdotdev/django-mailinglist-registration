@@ -1,0 +1,6 @@
+*.pyc
+dist
+MANIFEST
+_build
+_static
+INSTALL

@@ -1,7 +1,7 @@
 from distutils.core import setup
 import os
 
-from registration import get_version
+from mailinglist_registration import get_version
 
 
 # Compile the list of packages available, because distutils doesn't have
@@ -26,17 +26,16 @@ for dirpath, dirnames, filenames in os.walk('registration'):
             data_files.append(os.path.join(prefix, f))
 
 
-setup(name='django-registration',
+setup(name='django-mailinglist-registration',
       version=get_version().replace(' ', '-'),
-      description='An extensible user-registration application for Django',
-      author='James Bennett',
-      author_email='james@b-list.org',
-      url='http://www.bitbucket.org/ubernostrum/django-registration/wiki/',
-      download_url='http://www.bitbucket.org/ubernostrum/django-registration/get/v0.8.gz',
-      package_dir={'registration': 'registration'},
+      description='An extensible mailinglist-registration application for Django',
+      author='Daniel Patrick',
+      author_email='danieljudepatrick@gmail.com',
+      url='https://github.com/remarkablerocket/django-mailinglist-registration',
+      package_dir={'mailinglist_registration': 'mailinglist_registration'},
       packages=packages,
-      package_data={'registration': data_files},
-      classifiers=['Development Status :: 4 - Beta',
+      package_data={'mailinglist_registration': data_files},
+      classifiers=['Development Status :: 1 - Planning',
                    'Environment :: Web Environment',
                    'Framework :: Django',
                    'Intended Audience :: Developers',

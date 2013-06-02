@@ -1,3 +1,7 @@
+Daniel Patrick (https://github.com/remarkablerocket) is the
+"author" of django-mailinglist-registration. This is an adaptation
+of django-registration.
+
 The primary author of django-registration is James Bennett
 <james@b-list.org>, who may be found online at
 <http://www.b-list.org/>.

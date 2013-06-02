@@ -1,5 +1,5 @@
 """
-Views which allow users to create and activate accounts.
+Views which allow subscribers to create and activate accounts.
 
 """
 
@@ -7,8 +7,8 @@ from django.shortcuts import redirect
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
 
-from registration import signals
-from registration.forms import RegistrationForm
+from mailinglist_registration import signals
+from mailinglist_registration.forms import RegistrationForm
 
 
 class _RequestPassingFormView(FormView):
@@ -45,8 +45,8 @@ class _RequestPassingFormView(FormView):
     def get_initial(self, request=None):
         return super(_RequestPassingFormView, self).get_initial()
 
-    def get_success_url(self, request=None, user=None):
-        # We need to be able to use the request and the new user when
+    def get_success_url(self, request=None, subscriber=None):
+        # We need to be able to use the request and the new subscriber when
         # constructing success_url.
         return super(_RequestPassingFormView, self).get_success_url()
 
@@ -59,18 +59,18 @@ class _RequestPassingFormView(FormView):
 
 class RegistrationView(_RequestPassingFormView):
     """
-    Base class for user registration views.
+    Base class for subscriber registration views.
     
     """
-    disallowed_url = 'registration_disallowed'
+    disallowed_url = 'mailinglist_registration_disallowed'
     form_class = RegistrationForm
     http_method_names = ['get', 'post', 'head', 'options', 'trace']
     success_url = None
-    template_name = 'registration/registration_form.html'
+    template_name = 'mailinglist/registration_form.html'
 
     def dispatch(self, request, *args, **kwargs):
         """
-        Check that user signup is allowed before even bothering to
+        Check that subscriber signup is allowed before even bothering to
         dispatch or do other processing.
         
         """
@@ -79,8 +79,8 @@ class RegistrationView(_RequestPassingFormView):
         return super(RegistrationView, self).dispatch(request, *args, **kwargs)
 
     def form_valid(self, request, form):
-        new_user = self.register(request, **form.cleaned_data)
-        success_url = self.get_success_url(request, new_user)
+        new_subscriber = self.register(request, **form.cleaned_data)
+        success_url = self.get_success_url(request, new_subscriber)
         
         # success_url may be a simple string, or a tuple providing the
         # full argument set for redirect(). Attempting to unpack it
@@ -93,7 +93,7 @@ class RegistrationView(_RequestPassingFormView):
 
     def registration_allowed(self, request):
         """
-        Override this to enable/disable user registration, either
+        Override this to enable/disable subscriber registration, either
         globally or on a per-request basis.
         
         """
@@ -101,7 +101,7 @@ class RegistrationView(_RequestPassingFormView):
 
     def register(self, request, **cleaned_data):
         """
-        Implement user-registration logic here. Access to both the
+        Implement subscriber-registration logic here. Access to both the
         request and the full cleaned_data of the registration form is
         available here.
         
@@ -111,19 +111,19 @@ class RegistrationView(_RequestPassingFormView):
 
 class ActivationView(TemplateView):
     """
-    Base class for user activation views.
+    Base class for subscriber activation views.
     
     """
     http_method_names = ['get']
-    template_name = 'registration/activate.html'
+    template_name = 'mailinglist/activate.html'
 
     def get(self, request, *args, **kwargs):
-        activated_user = self.activate(request, *args, **kwargs)
-        if activated_user:
-            signals.user_activated.send(sender=self.__class__,
-                                        user=activated_user,
+        activated_subscriber = self.activate(request, *args, **kwargs)
+        if activated_subscriber:
+            signals.subscriber_activated.send(sender=self.__class__,
+                                        subscriber=activated_subscriber,
                                         request=request)
-            success_url = self.get_success_url(request, activated_user)
+            success_url = self.get_success_url(request, activated_subscriber)
             try:
                 to, args, kwargs = success_url
                 return redirect(to, *args, **kwargs)
@@ -138,5 +138,5 @@ class ActivationView(TemplateView):
         """
         raise NotImplementedError
 
-    def get_success_url(self, request, user):
+    def get_success_url(self, request, subscriber):
         raise NotImplementedError
