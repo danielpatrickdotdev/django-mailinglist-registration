@@ -25,14 +25,22 @@ class RegistrationForm(forms.Form):
     
     email = forms.EmailField(label=_("Email address"))
     
+    def __init__(self, *args, **kwargs):
+        super(RegistrationForm, self).__init__(*args, **kwargs)
+        self.fields['email'].error_messages['required'] = 'Please enter an email address or we\'re not going to get very far.'
+        self.fields['email'].error_messages['invalid'] = 'Please enter a valid email address.'
+    
     def clean_email(self):
         """
         Validate that the supplied email address is unique for the
         site.
         
         """
-        if Subscriber.objects.filter(email__iexact=self.cleaned_data['email']):
-            raise forms.ValidationError(_("This email address is already in use. Please supply a different email address."))
+        email_address = self.cleaned_data['email']
+        if Subscriber.objects.filter(email__iexact=email_address,is_active=True):
+            raise forms.ValidationError(_("%s is already subscribed to our updates!" % email_address))
+        if Subscriber.objects.filter(email__iexact=email_address,is_active=False):
+            raise forms.ValidationError(_("A verification email has already been sent to %s. Please check your junk mail if you haven't received it." % email_address))
         return self.cleaned_data['email']
 
 
@@ -70,8 +78,11 @@ class RegistrationFormNoFreeEmail(RegistrationForm):
         
         """
         email_domain = self.cleaned_data['email'].split('@')[1]
+        email_address = self.cleaned_data['email']
         if email_domain in self.bad_domains:
             raise forms.ValidationError(_("Registration using free email addresses is prohibited. Please supply a different email address."))
-        if Subscriber.objects.filter(email__iexact=self.cleaned_data['email']):
-            raise forms.ValidationError(_("This email address is already in use. Please supply a different email address."))
+        if Subscriber.objects.filter(email__iexact=email_address,is_active=True):
+            raise forms.ValidationError(_("%s is already subscribed to our updates!" % email_address))
+        if Subscriber.objects.filter(email__iexact=email_address,is_active=False):
+            raise forms.ValidationError(_("A verification email has already been sent to %s. Please check your junk mail if you haven't received it." % email_address))
         return self.cleaned_data['email']
