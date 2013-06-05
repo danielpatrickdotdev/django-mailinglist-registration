@@ -7,6 +7,7 @@ from django.shortcuts import redirect
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
 
+from mailinglist_registration.models import Subscriber
 from mailinglist_registration import signals
 from mailinglist_registration.forms import RegistrationForm
 
@@ -140,3 +141,12 @@ class ActivationView(TemplateView):
 
     def get_success_url(self, request, subscriber):
         raise NotImplementedError
+
+class DeRegistrationView(TemplateView):
+    http_method_names = ['get']
+    
+    def get(self, request, deactivation_key, *args, **kwargs):
+        subscriber = Subscriber.objects.deactivate_subscriber(deactivation_key)
+        if subscriber:
+            return redirect(success_url)
+        return super(DeRegistrationView, self).get(request, *args, **kwargs)

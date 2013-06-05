@@ -59,6 +59,7 @@ class RegistrationManager(models.Manager):
             if not profile.activation_key_expired():
                 subscriber = profile.subscriber
                 subscriber.is_active = True
+                subscriber.deactivation_key = profile.activation_key
                 subscriber.save()
                 profile.activation_key = self.model.ACTIVATED
                 profile.save()
@@ -164,6 +165,28 @@ class SubscriberManager(models.Manager):
             email = '@'.join([email_name, domain_part.lower()])
         return email
 
+    def deactivate_subscriber(self, deactivation_key):
+        """
+        Delete subscriber (and registration profile)
+
+        """
+        # Make sure the key we're trying conforms to the pattern of a
+        # SHA1 hash; if it doesn't, no point trying to look it up in
+        # the database.
+        if SHA1_RE.search(deactivation_key):
+            try:
+                subscriber = self.get(deactivation_key=deactivation_key)
+            except self.model.DoesNotExist:
+                return False
+            try:
+                profile = RegistrationProfile.objects.get(subscriber=subscriber)
+            except RegistrationProfile.DoesNotExist:
+                pass
+            profile.delete()
+            subscriber.delete()
+            return True
+        return False
+
     def create_subscriber(self, email, **extra_fields):
         """
         Creates and saves a Subscriber with the given email address.
@@ -184,6 +207,7 @@ class Subscriber(models.Model):
     is_active = models.BooleanField(_('active'), default=True,
         help_text=_('Designates whether this subscriber should receive '
                     'emails. Unselect this instead of deleting accounts.'))
+    deactivation_key = models.CharField(_('deactivation key'), max_length=40)
     
     objects = SubscriberManager()
     
