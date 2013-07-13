@@ -1,5 +1,6 @@
 from django.conf.urls import patterns, include, url
 from django.conf import settings
+from mailinglist_registration.backends.messages import receivers
 from mailinglist_registration.backends.messages.views import RegistrationView, ActivationView, DeRegistrationView
 
 urlpatterns = patterns('',

@@ -42,8 +42,8 @@ class RegistrationView(BaseRegistrationView):
             site = RequestSite(request)
         subscriber = RegistrationProfile.objects.create_inactive_subscriber(email, site)
         signals.subscriber_registered.send(sender=self.__class__,
-                                     subscriber=subscriber,
-                                     request=request)
+                                    subscriber=subscriber,
+                                    request=request)
         return subscriber
 
     def registration_allowed(self, request):
@@ -78,9 +78,6 @@ class ActivationView(TemplateView):
     def get(self, request, *args, **kwargs):
         activated_subscriber = self.activate(request, *args, **kwargs)
         if activated_subscriber:
-            signals.subscriber_activated.send(sender=self.__class__,
-                                        subscriber=activated_subscriber,
-                                        request=request)
             messages.success(request,"Your email address has been confirmed. Thank you for subscribing to our updates!")
             success_url = self.get_success_url(request, activated_subscriber)
             try:
@@ -118,8 +115,21 @@ class DeRegistrationView(TemplateView):
     success_url = None
     
     def get(self, request, deactivation_key, *args, **kwargs):
-        subscriber = Subscriber.objects.deactivate_subscriber(deactivation_key)
-        if subscriber:
+        """
+        Given an a deactivation key, look up and deactivate the subscriber
+        account corresponding to that key (if possible).
+
+        After successful deactivation, the signal
+        ``mailinglist_registration.signals.subscriber_deactivated`` will be sent, with the
+        email of the deactivated ``Subscriber`` as the keyword argument ``email`` and
+        the class of this backend as the sender.
+        
+        """
+        email = Subscriber.objects.deactivate_subscriber(deactivation_key)
+        if email:
+            signals.subscriber_deactivated.send(sender=self.__class__,
+                                        email=email,
+                                        request=request)
             messages.info(request,"Your email address has been removed from our mailing list.")
         else:
             messages.error(request,"Are you sure you typed that URL correctly?")

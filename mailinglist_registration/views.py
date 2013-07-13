@@ -8,7 +8,6 @@ from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
 
 from mailinglist_registration.models import Subscriber
-from mailinglist_registration import signals
 from mailinglist_registration.forms import RegistrationForm
 
 
@@ -121,9 +120,6 @@ class ActivationView(TemplateView):
     def get(self, request, *args, **kwargs):
         activated_subscriber = self.activate(request, *args, **kwargs)
         if activated_subscriber:
-            signals.subscriber_activated.send(sender=self.__class__,
-                                        subscriber=activated_subscriber,
-                                        request=request)
             success_url = self.get_success_url(request, activated_subscriber)
             try:
                 to, args, kwargs = success_url

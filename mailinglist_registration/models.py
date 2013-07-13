@@ -182,9 +182,10 @@ class SubscriberManager(models.Manager):
                 profile = RegistrationProfile.objects.get(subscriber=subscriber)
             except RegistrationProfile.DoesNotExist:
                 pass
+            email = subscriber.email
             profile.delete()
             subscriber.delete()
-            return True
+            return email
         return False
 
     def create_subscriber(self, email, **extra_fields):
